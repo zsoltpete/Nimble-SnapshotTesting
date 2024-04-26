@@ -58,7 +58,7 @@ public func haveValidSnapshot<Value, Format>(
     testName: String? = nil,
     line: UInt = #line,
     function: String = #function
-) -> Predicate<Value> {
+) -> Nimble.Predicate<Value> {
     haveValidSnapshot(as: [strategy],
                       named: name,
                       record: record,
@@ -93,7 +93,7 @@ public func haveValidSnapshot<Value, Format>(
     testName: String? = nil,
     line: UInt = #line,
     function: String = #function
-) -> Predicate<Value> {
+) -> Nimble.Predicate<Value> {
     return Predicate { actualExpression in
         guard let value = try actualExpression.evaluate() else {
             return PredicateResult(status: .fail, message: .fail("have valid snapshot"))
@@ -138,7 +138,7 @@ public extension Expectation {
     ///   - timeout: The timeout for the test
     ///   - pollInterval: The polling interval for the test. It uses `AsyncDefaults.snapshotPollInterval` as the default
     ///   - description: Additional description for the test
-    func toEventuallyIfTestingSnapshots(_ predicate: Predicate<T>,
+    func toEventuallyIfTestingSnapshots(_ predicate: Nimble.Predicate<T>,
                                         timeout: DispatchTimeInterval = AsyncDefaults.timeout,
                                         pollInterval: DispatchTimeInterval = AsyncDefaults.snapshotPollInterval,
                                         description: String? = nil) {
@@ -174,7 +174,7 @@ public func haveValidSnapshot<Value, Format>(
     testName: String? = nil,
     line: UInt = #line,
     function: String = #function
-) -> Predicate<Value> {
+) -> Nimble.Predicate<Value> {
     haveValidSnapshot(as: [strategy],
                       named: name,
                       record: record,
@@ -238,7 +238,7 @@ public func haveValidSnapshot<Value, Format>(
     testName: String? = nil,
     line: UInt = #line,
     function: String = #function
-) -> Predicate<Value> {
+) -> Nimble.Predicate<Value> {
     if SnapshotTesting.isRecording || record {
         return haveValidSnapshot(as: strategies.map { .wait(for: recordDelay, on: $0) },
                                  named: name,
