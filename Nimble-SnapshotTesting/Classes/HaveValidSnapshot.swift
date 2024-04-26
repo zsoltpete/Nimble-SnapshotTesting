@@ -47,7 +47,7 @@ private enum Counter {
 ///   - testName: The name of the test in which failure occurred. Defaults to a sanitized name based on the quick context.
 ///   - line: The line number on which failure occurred. Defaults to the line number on which this function was called.
 ///   - function: The function name. This is used as a fallback if the currently running test is not found
-/// - Returns: A matcher to use in Nimble
+/// - Returns: A predicate to use in Nimble
 public func haveValidSnapshot<Value, Format>(
     as strategy: Snapshotting<Value, Format>,
     named name: String? = nil,
@@ -58,7 +58,7 @@ public func haveValidSnapshot<Value, Format>(
     testName: String? = nil,
     line: UInt = #line,
     function: String = #function
-) -> Matcher<Value> {
+) -> Nimble.Predicate<Value> {
     haveValidSnapshot(as: [strategy],
                       named: name,
                       record: record,
@@ -82,7 +82,7 @@ public func haveValidSnapshot<Value, Format>(
 ///   - testName: The name of the test in which failure occurred. Defaults to a sanitized name based on the quick context.
 ///   - line: The line number on which failure occurred. Defaults to the line number on which this function was called.
 ///   - function: The function name. This is used as a fallback if the currently running test is not found
-/// - Returns: A matcher to use in Nimble
+/// - Returns: A predicate to use in Nimble
 public func haveValidSnapshot<Value, Format>(
     as strategies: [Snapshotting<Value, Format>],
     named name: String? = nil,
@@ -93,10 +93,10 @@ public func haveValidSnapshot<Value, Format>(
     testName: String? = nil,
     line: UInt = #line,
     function: String = #function
-) -> Matcher<Value> {
-    return Matcher { actualExpression in
+) -> Nimble.Predicate<Value> {
+    return Predicate { actualExpression in
         guard let value = try actualExpression.evaluate() else {
-            return MatcherResult(status: .fail, message: .fail("have valid snapshot"))
+            return PredicateResult(status: .fail, message: .fail("have valid snapshot"))
         }
 
         let testName = testName ?? CurrentTestCaseTracker.shared.currentTestCase?.sanitizedName ?? function
@@ -117,7 +117,7 @@ public func haveValidSnapshot<Value, Format>(
             }
         }
 
-        return MatcherResult(
+        return PredicateResult(
             bool: failureMessages.isEmpty,
             message: .fail(failureMessages.joined(separator: ",\n"))
         )
@@ -126,46 +126,27 @@ public func haveValidSnapshot<Value, Format>(
 
 // MARK: - toEventually helpers
 
-public extension PollingDefaults {
+public extension AsyncDefaults {
     /// Default poll interval used for snapshot `toEventuallyIfTestingSnapshot` expectation.
-    static var snapshotPollInterval: NimbleTimeInterval = .milliseconds(200)
+    static var snapshotPollInterval: DispatchTimeInterval = .milliseconds(200)
 }
 
-public extension SyncExpectation {
-    /// Uses `toEventually` to test the matcher only if the snapshot global recording mode is turned off. If the recording mode is on it will use a `to` expectation with the `recordingDelay`.
+public extension Expectation {
+    /// Uses `toEventually` to test the predicate only if the snapshot global recording mode is turned off. If the recording mode is on it will use a `to` expectation with the `recordingDelay`.
     /// - Parameters:
-    ///   - matcher: The matcher to evaluate. Ideally, we should only use the `haveValidSnapshot` matcher here with a `recordingDelay`
+    ///   - predicate: The predicate to evaluate. Ideally, we should only use the `haveValidSnapshot` predicate here with a `recordingDelay`
     ///   - timeout: The timeout for the test
     ///   - pollInterval: The polling interval for the test. It uses `AsyncDefaults.snapshotPollInterval` as the default
     ///   - description: Additional description for the test
-    @available(*, noasync, message: "the sync version of `toEventuallyIfTestingSnapshots` does not work in async contexts. Use the async version with the same name as a drop-in replacement")
-    func toEventuallyIfTestingSnapshots(_ matcher: Matcher<Value>,
-                                        timeout: NimbleTimeInterval = PollingDefaults.timeout,
-                                        pollInterval: NimbleTimeInterval = PollingDefaults.snapshotPollInterval,
+    func toEventuallyIfTestingSnapshots(_ predicate: Nimble.Predicate<T>,
+                                        timeout: DispatchTimeInterval = AsyncDefaults.timeout,
+                                        pollInterval: DispatchTimeInterval = AsyncDefaults.snapshotPollInterval,
                                         description: String? = nil) {
         if isRecordingSnapshots {
-            to(matcher, description: description)
+            to(predicate, description: description)
         }
         else {
-            toEventually(matcher, timeout: timeout, pollInterval: pollInterval, description: description)
-        }
-    }
-
-    /// Uses `toEventually` to test the matcher only if the snapshot global recording mode is turned off. If the recording mode is on it will use a `to` expectation with the `recordingDelay`.
-    /// - Parameters:
-    ///   - matcher: The matcher to evaluate. Ideally, we should only use the `haveValidSnapshot` matcher here with a `recordingDelay`
-    ///   - timeout: The timeout for the test
-    ///   - pollInterval: The polling interval for the test. It uses `AsyncDefaults.snapshotPollInterval` as the default
-    ///   - description: Additional description for the test
-    func toEventuallyIfTestingSnapshots(_ matcher: Matcher<Value>,
-                                        timeout: NimbleTimeInterval = PollingDefaults.timeout,
-                                        pollInterval: NimbleTimeInterval = PollingDefaults.snapshotPollInterval,
-                                        description: String? = nil) async {
-        if isRecordingSnapshots {
-            to(matcher, description: description)
-        }
-        else {
-            await toEventually(matcher, timeout: timeout, pollInterval: pollInterval, description: description)
+            toEventually(predicate, timeout: timeout, pollInterval: pollInterval, description: description)
         }
     }
 }
@@ -181,7 +162,7 @@ public extension SyncExpectation {
 ///   - testName: The name of the test in which failure occurred. Defaults to a sanitized name based on the quick context.
 ///   - line: The line number on which failure occurred. Defaults to the line number on which this function was called.
 ///   - function: The function name. This is used as a fallback if the currently running test is not found
-/// - Returns: A matcher to use in Nimble
+/// - Returns: A predicate to use in Nimble
 public func haveValidSnapshot<Value, Format>(
     as strategy: Snapshotting<Value, Format>,
     named name: String? = nil,
@@ -193,7 +174,7 @@ public func haveValidSnapshot<Value, Format>(
     testName: String? = nil,
     line: UInt = #line,
     function: String = #function
-) -> Matcher<Value> {
+) -> Nimble.Predicate<Value> {
     haveValidSnapshot(as: [strategy],
                       named: name,
                       record: record,
@@ -245,7 +226,7 @@ private func testCaseIdentifier(line: UInt) -> String {
 ///   - testName: The name of the test in which failure occurred. Defaults to a sanitized name based on the quick context.
 ///   - line: The line number on which failure occurred. Defaults to the line number on which this function was called.
 ///   - function: The function name. This is used as a fallback if the currently running test is not found
-/// - Returns: A matcher to use in Nimble
+/// - Returns: A predicate to use in Nimble
 public func haveValidSnapshot<Value, Format>(
     as strategies: [Snapshotting<Value, Format>],
     named name: String? = nil,
@@ -257,7 +238,7 @@ public func haveValidSnapshot<Value, Format>(
     testName: String? = nil,
     line: UInt = #line,
     function: String = #function
-) -> Matcher<Value> {
+) -> Nimble.Predicate<Value> {
     if SnapshotTesting.isRecording || record {
         return haveValidSnapshot(as: strategies.map { .wait(for: recordDelay, on: $0) },
                                  named: name,
