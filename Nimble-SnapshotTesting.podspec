@@ -8,7 +8,7 @@ Pod::Spec.new do |s|
 
   s.homepage         = 'https://github.com/tahirmt/Nimble-SnapshotTesting'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
-  s.author           = { 'Mahmood Tahir' => 'matsoft90@gmail.com' }
+  s.author           = { 'Zsolt Pete' => 'pete.zsolt95@gmail.com' }
   s.source           = { :git => 'https://github.com/zsoltpete/Nimble-SnapshotTesting.git', :tag => "#{s.version.to_s}" }
 
   s.frameworks = "Foundation", "XCTest", "UIKit"
